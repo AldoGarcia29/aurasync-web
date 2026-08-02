@@ -102,7 +102,7 @@ obtenerDispositivos({
           },
         )
         .timeout(
-          const Duration(seconds: 10),
+          const Duration(seconds: 75),
         );
 
     if (response.statusCode != 200) {
@@ -153,7 +153,7 @@ obtenerDispositivos({
             }),
           )
           .timeout(
-            const Duration(seconds: 10),
+            const Duration(seconds: 75),
           );
 
       final Map<String, dynamic> body =

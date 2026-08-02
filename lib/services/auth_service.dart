@@ -61,7 +61,7 @@ class AuthService {
             }),
           )
           .timeout(
-            const Duration(seconds: 10),
+            const Duration(seconds: 75),
           );
 
       Map<String, dynamic>? body;
@@ -136,7 +136,7 @@ class AuthService {
           }),
         )
         .timeout(
-          const Duration(seconds: 10),
+          const Duration(seconds: 75),
         );
 
     Map<String, dynamic>? body;
