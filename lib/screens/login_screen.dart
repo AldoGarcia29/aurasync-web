@@ -270,35 +270,7 @@ Future<void> _abrirRegistro() async {
 
           const SizedBox(height: 12),
 
-          Row(
-            children: [
-              Checkbox(
-                value: _recordarme,
-                activeColor: const Color(0xFF5145CD),
-                onChanged: (valor) {
-                  setState(() {
-                    _recordarme = valor ?? false;
-                  });
-                },
-              ),
-              const Text('Recordarme'),
-              const Spacer(),
-              TextButton(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text(
-                        'La recuperación estará disponible próximamente.',
-                      ),
-                    ),
-                  );
-                },
-                child: const Text(
-                  '¿Olvidaste tu contraseña?',
-                ),
-              ),
-            ],
-          ),
+        
 
           if (_mensajeError != null) ...[
             const SizedBox(height: 8),
