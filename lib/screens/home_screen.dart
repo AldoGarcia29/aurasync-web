@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-
 import '../services/auth_service.dart';
 import '../widgets/app_footer.dart';
 import '../widgets/aura_logo.dart';
@@ -13,37 +12,28 @@ import 'contact_screen.dart';
 import '../models/biometria.dart';
 import '../services/biometria_service.dart';
 import '../services/device_service.dart';
-
 class HomeScreen extends StatelessWidget {
   final int usuarioId;
   final String nombre;
-
   const HomeScreen({super.key, required this.usuarioId, required this.nombre});
-
   Future<void> _cerrarSesion(BuildContext context) async {
     await AuthService.cerrarSesion();
-
     if (!context.mounted) return;
-
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (_) => const LoginScreen()),
       (route) => false,
     );
   }
-
   void _abrirPrivacidad(BuildContext context) {
     Navigator.pop(context);
-
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const PrivacyScreen()),
     );
   }
-
   void _abrirDispositivos(BuildContext context) {
     Navigator.pop(context);
-
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -51,10 +41,8 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
-
   void _abrirBuscador(BuildContext context) {
     Navigator.pop(context);
-
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -62,10 +50,8 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
-
   void _abrirBienestar(BuildContext context) {
     Navigator.pop(context);
-
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -73,10 +59,8 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
-
   void _abrirEstadisticas(BuildContext context) {
     Navigator.pop(context);
-
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -84,21 +68,18 @@ class HomeScreen extends StatelessWidget {
       ),
     );
   }
-
   void _abrirContacto(BuildContext context) {
     Navigator.pop(context);
-
     Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => const ContactScreen()),
     );
   }
-
   @override
   Widget build(BuildContext context) {
+    final esMovil = MediaQuery.sizeOf(context).width < 700;
     return Scaffold(
       backgroundColor: const Color(0xFFF5F7FC),
-
       drawer: _MenuLateral(
         nombre: nombre,
         onDevices: () => _abrirDispositivos(context),
@@ -109,13 +90,12 @@ class HomeScreen extends StatelessWidget {
         onContact: () => _abrirContacto(context),
         onLogout: () => _cerrarSesion(context),
       ),
-
       appBar: AppBar(
         backgroundColor: Colors.white,
         surfaceTintColor: Colors.white,
         elevation: 1,
         shadowColor: Colors.black12,
-        title: const AuraLogo(size: 38),
+        title: AuraLogo(size: esMovil ? 28 : 38),
         actions: [
           const Icon(
             Icons.notifications_none_rounded,
@@ -132,6 +112,7 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
           ),
+          if (!esMovil) ...[
           const SizedBox(width: 10),
           ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 130),
@@ -144,16 +125,16 @@ class HomeScreen extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 20),
+          ],
+          const SizedBox(width: 12),
         ],
       ),
-
-      body: SingleChildScrollView(
+      body: SafeArea(child: SingleChildScrollView(
         child: Column(
           children: [
             _HeroSection(nombre: nombre),
             Padding(
-              padding: const EdgeInsets.all(28),
+              padding: EdgeInsets.all(esMovil ? 20 : 28),
               child: ConstrainedBox(
                 constraints: const BoxConstraints(maxWidth: 1300),
                 child: _HomeDataSection(
@@ -162,14 +143,13 @@ class HomeScreen extends StatelessWidget {
 ),
               ),
             ),
-            const AppFooter(),
+            if (!esMovil) const AppFooter(),
           ],
         ),
-      ),
+      )),
     );
   }
 }
-
 class _MenuLateral extends StatelessWidget {
   final String nombre;
   final VoidCallback onPrivacy;
@@ -179,7 +159,6 @@ class _MenuLateral extends StatelessWidget {
   final VoidCallback onWellness;
   final VoidCallback onStatistics;
   final VoidCallback onContact;
-
   const _MenuLateral({
     required this.nombre,
     required this.onDevices,
@@ -190,13 +169,13 @@ class _MenuLateral extends StatelessWidget {
     required this.onPrivacy,
     required this.onLogout,
   });
-
   @override
   Widget build(BuildContext context) {
     return Drawer(
       backgroundColor: Colors.white,
       child: SafeArea(
-        child: Column(
+        child: ListView(
+          padding: EdgeInsets.zero,
           children: [
             Container(
               width: double.infinity,
@@ -240,7 +219,6 @@ class _MenuLateral extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 14),
-
             ListTile(
               leading: const Icon(Icons.home_rounded),
               title: const Text('Inicio'),
@@ -254,54 +232,44 @@ class _MenuLateral extends StatelessWidget {
                 Navigator.pop(context);
               },
             ),
-
             ListTile(
               leading: const Icon(Icons.self_improvement_rounded),
               title: const Text('Bienestar'),
               onTap: onWellness,
             ),
-
             ListTile(
               leading: const Icon(Icons.bar_chart_rounded),
               title: const Text('Estadísticas'),
               onTap: onStatistics,
             ),
-
             ListTile(
               leading: const Icon(Icons.devices_rounded),
               title: const Text('Dispositivos'),
               onTap: onDevices,
             ),
-
             ListTile(
               leading: const Icon(Icons.search_rounded),
               title: const Text('Buscador'),
               onTap: onSearch,
             ),
-
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 18, vertical: 8),
               child: Divider(),
             ),
-
             ListTile(
               leading: const Icon(Icons.shield_outlined),
               title: const Text('Aviso de privacidad'),
               onTap: onPrivacy,
             ),
-
             ListTile(
               leading: const Icon(Icons.contact_support_outlined),
               title: const Text('Contacto'),
               onTap: onContact,
             ),
-
             const Padding(
               padding: EdgeInsets.symmetric(horizontal: 18, vertical: 8),
               child: Divider(),
             ),
-
-            const Spacer(),
             const Divider(),
             ListTile(
               leading: const Icon(
@@ -321,17 +289,17 @@ class _MenuLateral extends StatelessWidget {
     );
   }
 }
-
 class _HeroSection extends StatelessWidget {
   final String nombre;
-
   const _HeroSection({required this.nombre});
-
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return LayoutBuilder(builder: (context, constraints) {
+      final esMovil = constraints.maxWidth < 700;
+      final anchoDisponible = constraints.maxWidth - (esMovil ? 40 : 92);
+      return Container(
       width: double.infinity,
-      constraints: const BoxConstraints(minHeight: 390),
+      constraints: BoxConstraints(minHeight: esMovil ? 0 : 390),
       decoration: const BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -340,7 +308,7 @@ class _HeroSection extends StatelessWidget {
         ),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 46, vertical: 54),
+        padding: EdgeInsets.symmetric(horizontal: esMovil ? 20 : 46, vertical: esMovil ? 28 : 54),
         child: Wrap(
           alignment: WrapAlignment.spaceBetween,
           crossAxisAlignment: WrapCrossAlignment.center,
@@ -348,25 +316,25 @@ class _HeroSection extends StatelessWidget {
           runSpacing: 35,
           children: [
             ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 700),
+              constraints: BoxConstraints(maxWidth: anchoDisponible < 700 ? anchoDisponible : 700),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     '¡Buenos días, $nombre! ☀️',
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Colors.white,
-                      fontSize: 48,
+                      fontSize: esMovil ? 28 : 48,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
                   const SizedBox(height: 18),
-                  const Text(
+                  Text(
                     'Hoy es un buen día para cuidar '
                     'tu mente y escuchar a tu cuerpo.',
                     style: TextStyle(
-                      color: Color(0xFFF0EEFF),
-                      fontSize: 20,
+                      color: const Color(0xFFF0EEFF),
+                      fontSize: esMovil ? 16 : 20,
                       height: 1.45,
                     ),
                   ),
@@ -399,7 +367,7 @@ class _HeroSection extends StatelessWidget {
               ),
             ),
             Container(
-              width: 300,
+              width: esMovil ? anchoDisponible : 300,
               padding: const EdgeInsets.all(25),
               decoration: BoxDecoration(
                 color: Colors.white.withValues(alpha: 0.94),
@@ -409,7 +377,7 @@ class _HeroSection extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Estado actual',
+                    'Estado de ejemplo',
                     style: TextStyle(fontSize: 17, fontWeight: FontWeight.w700),
                   ),
                   SizedBox(height: 24),
@@ -417,7 +385,7 @@ class _HeroSection extends StatelessWidget {
                     children: [
                       Text('😊', style: TextStyle(fontSize: 42)),
                       SizedBox(width: 14),
-                      Column(
+                      Expanded(child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
@@ -432,7 +400,7 @@ class _HeroSection extends StatelessWidget {
                             style: TextStyle(color: Color(0xFF667085)),
                           ),
                         ],
-                      ),
+                      )),
                     ],
                   ),
                   SizedBox(height: 24),
@@ -442,13 +410,13 @@ class _HeroSection extends StatelessWidget {
                     children: [
                       Icon(Icons.favorite_rounded, color: Color(0xFFEC4899)),
                       SizedBox(width: 12),
-                      Text(
-                        '72 lpm',
+                      Expanded(child: Text(
+                        '72 lpm · ejemplo',
                         style: TextStyle(
-                          fontSize: 25,
+                          fontSize: 21,
                           fontWeight: FontWeight.w800,
                         ),
-                      ),
+                      )),
                     ],
                   ),
                 ],
@@ -458,43 +426,36 @@ class _HeroSection extends StatelessWidget {
         ),
       ),
     );
+    });
   }
 }
-
 class _HomeDataSection extends StatefulWidget {
   final int usuarioId;
   final String nombre;
-
   const _HomeDataSection({
     required this.usuarioId,
     required this.nombre,
   });
-
   @override
   State<_HomeDataSection> createState() =>
       _HomeDataSectionState();
 }
-
 class _HomeDataSectionState
     extends State<_HomeDataSection> {
   Biometria? _biometria;
   List<Dispositivo> _dispositivos = [];
-
   bool _cargando = true;
   String? _error;
-
   @override
   void initState() {
     super.initState();
     _cargarDatos();
   }
-
   Future<void> _cargarDatos() async {
     setState(() {
       _cargando = true;
       _error = null;
     });
-
     try {
       final resultados = await Future.wait<Object>([
         BiometriaService().obtenerHistorial(
@@ -504,25 +465,19 @@ class _HomeDataSectionState
           usuarioId: widget.usuarioId,
         ),
       ]);
-
       final historial =
           resultados[0] as List<Biometria>;
-
       final dispositivos =
           resultados[1] as List<Dispositivo>;
-
       if (!mounted) return;
-
       setState(() {
         _biometria = historial.isEmpty
             ? null
             : historial.last;
-
         _dispositivos = dispositivos;
       });
     } catch (_) {
       if (!mounted) return;
-
       setState(() {
         _error =
             'No fue posible cargar tu información.';
@@ -535,7 +490,6 @@ class _HomeDataSectionState
       }
     }
   }
-
   void _abrirDispositivos() {
     Navigator.push(
       context,
@@ -545,9 +499,8 @@ class _HomeDataSectionState
           nombre: widget.nombre,
         ),
       ),
-    ).then((_) => _cargarDatos());
+    ).then((_) { if (mounted) _cargarDatos(); });
   }
-
   @override
   Widget build(BuildContext context) {
     if (_cargando) {
@@ -560,7 +513,6 @@ class _HomeDataSectionState
         ),
       );
     }
-
     if (_error != null) {
       return _BaseCard(
         title: 'No pudimos cargar tus datos',
@@ -584,66 +536,50 @@ class _HomeDataSectionState
         ),
       );
     }
-
     if (_biometria == null &&
         _dispositivos.isEmpty) {
       return _SyncEmptyCard(
         onConnect: _abrirDispositivos,
       );
     }
-
-    return Wrap(
-      spacing: 24,
-      runSpacing: 24,
-      children: [
+    return LayoutBuilder(builder: (context, constraints) {
+      const espacio = 20.0;
+      final columnas = constraints.maxWidth >= 1100 ? 3 : (constraints.maxWidth >= 700 ? 2 : 1);
+      final anchoTarjeta = (constraints.maxWidth - espacio * (columnas - 1)) / columnas;
+      final tarjetas = <Widget>[
         if (_biometria != null) ...[
-          _SummaryCard(
-            biometria: _biometria!,
-          ),
-          _RecommendationCard(
-            biometria: _biometria!,
-          ),
-        ] else
-          _SyncEmptyCard(
-            onConnect: _abrirDispositivos,
-          ),
-        if (_dispositivos.isNotEmpty)
-          _DeviceCard(
-            dispositivo: _dispositivos.first,
-          )
-        else
-          _NoDeviceCard(
-            onConnect: _abrirDispositivos,
-          ),
-      ],
-    );
+          _SummaryCard(biometria: _biometria!),
+          _RecommendationCard(biometria: _biometria!),
+        ] else _SyncEmptyCard(onConnect: _abrirDispositivos),
+        if (_dispositivos.isNotEmpty) _DeviceCard(dispositivo: _dispositivos.first)
+        else _NoDeviceCard(onConnect: _abrirDispositivos),
+      ];
+      return Wrap(spacing: espacio, runSpacing: espacio, children: [
+        for (final tarjeta in tarjetas) SizedBox(width: anchoTarjeta, child: tarjeta),
+      ]);
+    });
   }
 }
 
 class _SummaryCard extends StatelessWidget {
   final Biometria biometria;
-
   const _SummaryCard({
     required this.biometria,
   });
-
   @override
   Widget build(BuildContext context) {
     final progresoPasos =
         (biometria.pasos / 8000)
             .clamp(0.0, 1.0)
             .toDouble();
-
     final progresoActividad =
         (biometria.actividadMinutos / 60)
             .clamp(0.0, 1.0)
             .toDouble();
-
     final progresoSueno =
         (biometria.horasSueno / 8)
             .clamp(0.0, 1.0)
             .toDouble();
-
     return _BaseCard(
       title: 'Resumen de hoy',
       icon: Icons.insights_rounded,
@@ -674,39 +610,32 @@ class _SummaryCard extends StatelessWidget {
     );
   }
 }
-
 class _RecommendationCard
     extends StatelessWidget {
   final Biometria biometria;
-
   const _RecommendationCard({
     required this.biometria,
   });
-
   String get _recomendacion {
     if (biometria.ritmoCardiaco > 100) {
       return 'Tu ritmo cardiaco está elevado. '
           'Realiza una pausa y practica '
           'respiración lenta.';
     }
-
     if (biometria.horasSueno < 6) {
       return 'Tu descanso fue menor al recomendado. '
           'Procura dormir mejor y reducir '
           'actividades intensas.';
     }
-
     if (biometria.pasos < 3000) {
       return 'Tu actividad ha sido baja. '
           'Una caminata corta puede ayudarte '
           'a recuperar energía.';
     }
-
     return 'Tus indicadores se encuentran '
         'estables. Mantén tus buenos hábitos '
         'de descanso y actividad.';
   }
-
   @override
   Widget build(BuildContext context) {
     return _BaseCard(
@@ -738,34 +667,27 @@ class _RecommendationCard
     );
   }
 }
-
 class _DeviceCard extends StatelessWidget {
   final Dispositivo dispositivo;
-
   const _DeviceCard({
     required this.dispositivo,
   });
-
   String get _fechaConexion {
     final fecha = dispositivo.fechaConexion;
-
     if (fecha == null) {
       return 'Sin información de sincronización';
     }
-
     return '${fecha.day.toString().padLeft(2, '0')}/'
         '${fecha.month.toString().padLeft(2, '0')}/'
         '${fecha.year} '
         '${fecha.hour.toString().padLeft(2, '0')}:'
         '${fecha.minute.toString().padLeft(2, '0')}';
   }
-
   @override
   Widget build(BuildContext context) {
     final conectado =
         dispositivo.estado.toLowerCase() ==
             'vinculado';
-
     return _BaseCard(
       title: 'Dispositivo',
       icon: Icons.watch_rounded,
@@ -822,14 +744,11 @@ class _DeviceCard extends StatelessWidget {
     );
   }
 }
-
 class _SyncEmptyCard extends StatelessWidget {
   final VoidCallback onConnect;
-
   const _SyncEmptyCard({
     required this.onConnect,
   });
-
   @override
   Widget build(BuildContext context) {
     return _BaseCard(
@@ -863,14 +782,11 @@ class _SyncEmptyCard extends StatelessWidget {
     );
   }
 }
-
 class _NoDeviceCard extends StatelessWidget {
   final VoidCallback onConnect;
-
   const _NoDeviceCard({
     required this.onConnect,
   });
-
   @override
   Widget build(BuildContext context) {
     return _BaseCard(
@@ -900,24 +816,21 @@ class _NoDeviceCard extends StatelessWidget {
     );
   }
 }
-
 class _BaseCard extends StatelessWidget {
   final String title;
   final IconData icon;
   final Widget child;
-
   const _BaseCard({
     required this.title,
     required this.icon,
     required this.child,
   });
-
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 390,
+      width: double.infinity,
       constraints: const BoxConstraints(minHeight: 280),
-      padding: const EdgeInsets.all(27),
+      padding: const EdgeInsets.all(22),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(22),
@@ -936,13 +849,13 @@ class _BaseCard extends StatelessWidget {
             children: [
               Icon(icon, color: const Color(0xFF5145CD)),
               const SizedBox(width: 9),
-              Text(
+              Expanded(child: Text(
                 title,
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
                 ),
-              ),
+              )),
             ],
           ),
           const SizedBox(height: 25),
@@ -952,49 +865,34 @@ class _BaseCard extends StatelessWidget {
     );
   }
 }
-
 class _ProgressItem extends StatelessWidget {
   final String icon;
   final String label;
   final String value;
   final double progress;
-
   const _ProgressItem({
     required this.icon,
     required this.label,
     required this.value,
     required this.progress,
   });
-
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 22),
-      child: Row(
-        children: [
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(icon, style: const TextStyle(fontSize: 20)),
           const SizedBox(width: 10),
-          SizedBox(width: 70, child: Text(label)),
-          Expanded(
-            child: LinearProgressIndicator(
-              value: progress,
-              minHeight: 8,
-              borderRadius: BorderRadius.circular(20),
-              backgroundColor: const Color(0xFFE4E7EC),
-              color: const Color(0xFF8255E8),
-            ),
-          ),
-          const SizedBox(width: 12),
-          SizedBox(
-            width: 90,
-            child: Text(
-              value,
-              textAlign: TextAlign.right,
-              style: const TextStyle(fontSize: 12),
-            ),
-          ),
-        ],
-      ),
+          Expanded(child: Text(label)),
+          const SizedBox(width: 10),
+          Flexible(child: Text(value, textAlign: TextAlign.right, style: const TextStyle(fontSize: 13))),
+        ]),
+        const SizedBox(height: 10),
+        LinearProgressIndicator(value: progress, minHeight: 8,
+          borderRadius: BorderRadius.circular(20),
+          backgroundColor: const Color(0xFFE4E7EC), color: const Color(0xFF8255E8)),
+      ]),
     );
   }
 }

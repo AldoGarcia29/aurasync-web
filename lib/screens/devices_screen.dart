@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import '../services/device_service.dart';
 import '../widgets/app_footer.dart';
 import '../widgets/aura_logo.dart';
+import 'bluetooth_screen.dart';
 
 class DevicesScreen extends StatefulWidget {
   final int usuarioId;
@@ -220,7 +221,34 @@ Future<void> _cargarDispositivos() async {
                   children: [
                     _buildDevicesSection(),
                     const SizedBox(height: 25),
-                    _buildPairingCard(),
+                    SizedBox(
+                      width: double.infinity,
+                      height: 55,
+                      child: FilledButton.icon(
+                        onPressed: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const BluetoothScreen(),
+                            ),
+                          );
+                        },
+                        icon: const Icon(Icons.bluetooth_searching),
+                        label: const Text(
+                          'Buscar y conectar smartwatch',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        style: FilledButton.styleFrom(
+                          backgroundColor: const Color(0xFF5145CD),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),

@@ -8,7 +8,7 @@ class SearchService {
   static const String _baseUrl = 
     String.fromEnvironment(
   'API_BASE_URL',
-  defaultValue: 'http://localhost:8080',
+  defaultValue: 'https://aurasync-backend-use4.onrender.com',
 );
 
   Future<List<SearchResult>> buscar(String texto) async {

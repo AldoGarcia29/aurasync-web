@@ -4,6 +4,7 @@ import '../services/auth_service.dart';
 import '../widgets/aura_logo.dart';
 import 'home_screen.dart';
 import 'register_screen.dart';
+import '../validators/login_validator.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -198,23 +199,7 @@ Future<void> _abrirRegistro() async {
               texto: 'manuel@email.com',
               icono: Icons.mail_outline_rounded,
             ),
-            validator: (valor) {
-              final correo = valor?.trim() ?? '';
-
-              if (correo.isEmpty) {
-                return 'Ingresa tu correo electrónico.';
-              }
-
-              final expresionCorreo = RegExp(
-                r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
-              );
-
-              if (!expresionCorreo.hasMatch(correo)) {
-                return 'Ingresa un correo válido.';
-              }
-
-              return null;
-            },
+            validator: LoginValidator.validarCorreo,
           ),
 
           const SizedBox(height: 20),
@@ -255,17 +240,7 @@ Future<void> _abrirRegistro() async {
                 ),
               ),
             ),
-            validator: (valor) {
-              if (valor == null || valor.isEmpty) {
-                return 'Ingresa tu contraseña.';
-              }
-
-              if (valor.length < 8) {
-                return 'Debe contener al menos 8 caracteres.';
-              }
-
-              return null;
-            },
+            validator: LoginValidator.validarPassword,
           ),
 
           const SizedBox(height: 12),
@@ -336,26 +311,30 @@ Future<void> _abrirRegistro() async {
 
           const SizedBox(height: 18),
 
-Row(
-  mainAxisAlignment: MainAxisAlignment.center,
-  children: [
-    const Text(
-      '¿Aún no tienes una cuenta?',
-      style: TextStyle(
-        color: Color(0xFF667085),
-      ),
-    ),
-    TextButton(
-      onPressed: _abrirRegistro,
-      child: const Text(
-        'Registrarse',
-        style: TextStyle(
-          fontWeight: FontWeight.w700,
-        ),
-      ),
-    ),
-  ],
-),
+          Wrap(
+            alignment: WrapAlignment.center,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            spacing: 4,
+            runSpacing: 4,
+            children: [
+              const Text(
+                '¿Aún no tienes una cuenta?',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: Color(0xFF667085),
+                ),
+              ),
+              TextButton(
+                onPressed: _abrirRegistro,
+                child: const Text(
+                  'Registrarse',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
 
           const SizedBox(height: 28),
 
@@ -368,11 +347,14 @@ Row(
                 color: Color(0xFF98A2B3),
               ),
               SizedBox(width: 6),
-              Text(
-                'Tus datos permanecen protegidos',
-                style: TextStyle(
-                  color: Color(0xFF98A2B3),
-                  fontSize: 13,
+              Flexible(
+                child: Text(
+                  'Tus datos permanecen protegidos',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: Color(0xFF98A2B3),
+                    fontSize: 13,
+                  ),
                 ),
               ),
             ],

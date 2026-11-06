@@ -7,12 +7,10 @@ class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
 
   @override
-  State<RegisterScreen> createState() =>
-      _RegisterScreenState();
+  State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _RegisterScreenState
-    extends State<RegisterScreen> {
+class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
 
   final _nombreController = TextEditingController();
@@ -26,6 +24,9 @@ class _RegisterScreenState
   String? _error;
 
   Future<void> _registrar() async {
+    // Evita solicitudes repetidas desde el botón o el teclado.
+    if (_cargando) return;
+
     FocusScope.of(context).unfocus();
 
     setState(() {
@@ -49,12 +50,20 @@ class _RegisterScreenState
 
       if (!mounted) return;
 
+      // Solo regresa con éxito cuando el servicio confirma el registro.
       Navigator.pop(context, true);
     } on AuthException catch (error) {
       if (!mounted) return;
 
       setState(() {
         _error = error.mensaje;
+      });
+    } catch (_) {
+      if (!mounted) return;
+
+      setState(() {
+        _error =
+        'Ocurrió un problema inesperado. Intenta nuevamente.';
       });
     } finally {
       if (mounted) {
@@ -106,8 +115,7 @@ class _RegisterScreenState
             child: Form(
               key: _formKey,
               child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.stretch,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   const Icon(
                     Icons.person_add_alt_1_rounded,
@@ -150,8 +158,7 @@ class _RegisterScreenState
                     controller: _correoController,
                     etiqueta: 'Correo electrónico',
                     icono: Icons.email_outlined,
-                    keyboardType:
-                        TextInputType.emailAddress,
+                    keyboardType: TextInputType.emailAddress,
                     validator: (value) {
                       final correo = value?.trim() ?? '';
                       final expresion = RegExp(
@@ -172,8 +179,7 @@ class _RegisterScreenState
                     ocultar: _ocultarPassword,
                     onVisibility: () {
                       setState(() {
-                        _ocultarPassword =
-                            !_ocultarPassword;
+                        _ocultarPassword = !_ocultarPassword;
                       });
                     },
                     validator: (value) {
@@ -192,13 +198,12 @@ class _RegisterScreenState
                     onVisibility: () {
                       setState(() {
                         _ocultarConfirmacion =
-                            !_ocultarConfirmacion;
+                        !_ocultarConfirmacion;
                       });
                     },
                     onSubmitted: (_) => _registrar(),
                     validator: (value) {
-                      if (value !=
-                          _passwordController.text) {
+                      if (value != _passwordController.text) {
                         return 'Las contraseñas no coinciden.';
                       }
 
@@ -211,8 +216,7 @@ class _RegisterScreenState
                       padding: const EdgeInsets.all(13),
                       decoration: BoxDecoration(
                         color: const Color(0xFFFFF1F0),
-                        borderRadius:
-                            BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
                         _error!,
@@ -226,40 +230,36 @@ class _RegisterScreenState
                   SizedBox(
                     height: 54,
                     child: FilledButton(
-                      onPressed:
-                          _cargando ? null : _registrar,
+                      onPressed: _cargando ? null : _registrar,
                       style: FilledButton.styleFrom(
-                        backgroundColor:
-                            const Color(0xFF5145CD),
-                      shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(14),
+                        backgroundColor: const Color(0xFF5145CD),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
                       ),
-                    ),
                       child: _cargando
                           ? const SizedBox(
-                              width: 23,
-                              height: 23,
-                              child:
-                                  CircularProgressIndicator(
-                                color: Colors.white,
-                                strokeWidth: 2.4,
-                              ),
-                            )
+                        width: 23,
+                        height: 23,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2.4,
+                        ),
+                      )
                           : const Text(
-                              'Crear cuenta',
-                              style: TextStyle(
-                                fontSize: 17,
-                                fontWeight:
-                                    FontWeight.w700,
-                              ),
-                            ),
+                        'Crear cuenta',
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 14),
                   TextButton(
-                    onPressed: () =>
-                        Navigator.pop(context),
+                    onPressed: _cargando
+                        ? null
+                        : () => Navigator.pop(context),
                     child: const Text(
                       'Ya tengo una cuenta',
                     ),
@@ -282,6 +282,7 @@ class _RegisterScreenState
   }) {
     return TextFormField(
       controller: controller,
+      enabled: !_cargando,
       keyboardType: keyboardType,
       validator: validator,
       decoration: _decoracion(
@@ -301,7 +302,10 @@ class _RegisterScreenState
   }) {
     return TextFormField(
       controller: controller,
+      enabled: !_cargando,
       obscureText: ocultar,
+      autocorrect: false,
+      enableSuggestions: false,
       validator: validator,
       onFieldSubmitted: onSubmitted,
       decoration: _decoracion(
@@ -309,7 +313,7 @@ class _RegisterScreenState
         Icons.lock_outline_rounded,
       ).copyWith(
         suffixIcon: IconButton(
-          onPressed: onVisibility,
+          onPressed: _cargando ? null : onVisibility,
           icon: Icon(
             ocultar
                 ? Icons.visibility_off_outlined
@@ -321,9 +325,9 @@ class _RegisterScreenState
   }
 
   InputDecoration _decoracion(
-    String etiqueta,
-    IconData icono,
-  ) {
+      String etiqueta,
+      IconData icono,
+      ) {
     return InputDecoration(
       labelText: etiqueta,
       prefixIcon: Icon(icono),
