@@ -21,6 +21,12 @@ jobs:
         run: |
           set -o pipefail
           { time flutter test --reporter expanded; } 2>&1 | tee flutter-test.log
+      - name: Guardar evidencia de Flutter
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pruebas-flutter
+          path: flutter-test.log
 
   persistence:
     runs-on: ubuntu-latest
@@ -95,3 +101,9 @@ jobs:
           if [[ -f backend-ci.log ]]; then
             tail -n 100 backend-ci.log
           fi
+      - name: Guardar evidencia de integración
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pruebas-api
+          path: api-test.log
