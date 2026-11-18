@@ -1,0 +1,97 @@
+name: AuraSync Flutter CI
+
+on: [push, pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  flutter:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.2'
+          channel: stable
+          cache: true
+      - run: flutter pub get --enforce-lockfile
+      - name: Ejecutar pruebas Flutter
+        run: |
+          set -o pipefail
+          { time flutter test --reporter expanded; } 2>&1 | tee flutter-test.log
+
+  persistence:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17
+        env:
+          POSTGRES_DB: aurasync_ci
+          POSTGRES_USER: aurasync_ci
+          POSTGRES_PASSWORD: aurasync_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U aurasync_ci -d aurasync_ci"
+          --health-interval 5s --health-timeout 5s --health-retries 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: AldoGarcia29/aurasync-backend
+          ref: a1ad19b4965a6779b272aa95ac3456d85b2be69d
+          path: backend-ci
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.44.2'
+          channel: stable
+          cache: true
+      - run: flutter pub get --enforce-lockfile
+      - name: Iniciar Elasticsearch aislado
+        run: |
+          sudo sysctl -w vm.max_map_count=1048576
+          docker run --detach --rm -p 127.0.0.1:9200:9200 \
+            -e discovery.type=single-node -e xpack.security.enabled=false \
+            -e 'ES_JAVA_OPTS=-Xms512m -Xmx512m' \
+            docker.elastic.co/elasticsearch/elasticsearch:9.3.0
+          curl --fail --silent --show-error --retry 30 --retry-delay 2 \
+            --retry-all-errors http://127.0.0.1:9200/_cluster/health
+      - name: Preparar API y datos de prueba
+        env:
+          AURASYNC_DB_URL: jdbc:postgresql://127.0.0.1:5432/aurasync_ci
+          AURASYNC_DB_USERNAME: aurasync_ci
+          AURASYNC_DB_PASSWORD: aurasync_ci
+          ELASTICSEARCH_URL: http://127.0.0.1:9200
+          ELASTICSEARCH_API_KEY: ''
+        run: |
+          mvn --batch-mode -f backend-ci/pom.xml -DskipTests package
+          java -jar backend-ci/target/aura-0.0.1-SNAPSHOT.jar > backend-ci.log 2>&1 &
+          for attempt in {1..30}; do
+            status=$(curl --silent --max-time 3 --output /dev/null --write-out '%{http_code}' \
+              http://127.0.0.1:8080/api/biometria/usuario/0 || true)
+            if [[ "$status" == 200 ]]; then
+              break
+            fi
+            sleep 2
+          done
+          curl --fail-with-body --silent --show-error \
+            -H 'Content-Type: application/json' \
+            -d '{"nombre":"Usuario Pruebas","correo":"pruebas.aurasync@example.com","password":"AuraTest12345"}' \
+            http://127.0.0.1:8080/api/auth/registro
+      - name: Ejecutar integración con Spring Boot y PostgreSQL
+        run: |
+          set -o pipefail
+          { time flutter test test_api --reporter expanded --dart-define=API_BASE_URL=http://127.0.0.1:8080; } 2>&1 | tee api-test.log
+      - name: Mostrar registro de la API si hay fallos
+        if: failure()
+        run: |
+          if [[ -f backend-ci.log ]]; then
+            tail -n 100 backend-ci.log
+          fi

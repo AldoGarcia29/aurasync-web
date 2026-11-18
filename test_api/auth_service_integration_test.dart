@@ -16,7 +16,7 @@ void main() {
   group('Integración real: AuthService y API', () {
     test(
       'I01: credenciales correctas devuelven el usuario esperado',
-          () async {
+      () async {
         final usuario = await AuthService.iniciarSesion(
           correo: correo,
           password: password,
@@ -31,21 +31,21 @@ void main() {
 
     test(
       'I02: contraseña incorrecta produce un rechazo de autenticación',
-          () async {
+      () async {
         // Verifica que la API realmente responde 401.
         // Un fallo de conexión no debe contar como un rechazo correcto.
         final response = await http
             .post(
-          Uri.parse('$baseUrl/api/auth/login'),
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-          body: jsonEncode({
-            'correo': correo,
-            'password': 'Incorrecta98765',
-          }),
-        )
+              Uri.parse('$baseUrl/api/auth/login'),
+              headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+              },
+              body: jsonEncode({
+                'correo': correo,
+                'password': 'Incorrecta98765',
+              }),
+            )
             .timeout(const Duration(seconds: 75));
 
         expect(
@@ -53,14 +53,6 @@ void main() {
           401,
           reason: 'La API debe rechazar las credenciales con HTTP 401.',
         );
-
-        final body = response.body.isEmpty
-            ? <String, dynamic>{}
-            : jsonDecode(response.body) as Map<String, dynamic>;
-
-        final mensajeEsperado =
-            body['mensaje'] as String? ??
-                'Correo o contraseña incorrectos.';
 
         // Verifica cómo interpreta el servicio real ese rechazo.
         await expectLater(
@@ -70,9 +62,9 @@ void main() {
           ),
           throwsA(
             isA<AuthException>().having(
-                  (error) => error.mensaje,
+              (error) => error.mensaje,
               'mensaje',
-              mensajeEsperado,
+              'Correo o contraseña incorrectos.',
             ),
           ),
         );
